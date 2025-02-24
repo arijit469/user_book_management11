@@ -1,0 +1,224 @@
+/* Full-screen container with animated gradient */
+.landing-container {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  /* Gradient animation */
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  /* Overlay with subtle gradient and blur */
+  .landing-overlay {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+  }
+  
+  /* Card with glassmorphism effect */
+  .landing-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    padding: 50px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    color: #fff;
+  }
+  
+  /* Slide-up animation for card */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out;
+  }
+  
+  /* Text fade-in animation */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .animate-text {
+    animation: fadeIn 1s ease-out;
+  }
+  
+  .landing-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, #00ddeb, #fff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation-delay: 0.2s;
+  }
+  
+  .landing-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 30px;
+    opacity: 0.7;
+    font-style: italic;
+    animation-delay: 0.4s;
+  }
+  
+  /* Tab navigation */
+  .tab-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .tab-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+  }
+  
+  .tab-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+  
+  .tab-btn.active {
+    background: #00ddeb;
+    color: #fff;
+  }
+  
+  /* Form styling with animation */
+  .landing-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+  
+  @keyframes formFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .animate-form {
+    animation: formFade 0.5s ease-out;
+  }
+  
+  /* Input wrapper for animated effects */
+  .input-wrapper {
+    position: relative;
+  }
+  
+  .landing-input {
+    width: 100%;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 1.1rem;
+    transition: background 0.3s ease;
+  }
+  
+  .landing-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .landing-input:focus {
+    background: rgba(255, 255, 255, 0.25);
+    outline: none;
+    animation: pulseGlow 1.5s infinite;
+  }
+  
+  /* Pulse glow animation for focused input */
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 5px rgba(0, 221, 235, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(0, 221, 235, 0.6); }
+    100% { box-shadow: 0 0 5px rgba(0, 221, 235, 0.3); }
+  }
+  
+  /* Animated border effect */
+  .input-border {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: #00ddeb;
+    transition: width 0.4s ease, left 0.4s ease;
+  }
+  
+  .landing-input:focus + .input-border {
+    width: 100%;
+    left: 0;
+  }
+  
+  /* Button styling with bounce animation */
+  .landing-btn {
+    background: linear-gradient(90deg, #00ddeb, #007bff);
+    color: #fff;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+  }
+  
+  .landing-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 221, 235, 0.5);
+    background: linear-gradient(90deg, #007bff, #00ddeb);
+    animation: bounce 0.5s ease;
+  }
+  
+  /* Bounce animation for button */
+  @keyframes bounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1.05); }
+  }
+  
+  /* Error and success messages */
+  .error-message {
+    color: #ff4d4d;
+    font-size: 1rem;
+    margin-top: 15px;
+    font-weight: 500;
+    animation: fadeIn 0.5s ease-out;
+  }
+  
+  .success-message {
+    color: #00ddeb;
+    font-size: 1rem;
+    margin-top: 15px;
+    font-weight: 500;
+    animation: fadeIn 0.5s ease-out;
+  }
