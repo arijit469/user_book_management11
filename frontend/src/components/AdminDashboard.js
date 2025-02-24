@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 Modal.setAppElement('#root');
 
-const Home = () => {
+const AdminDashboard = () => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,48 +20,25 @@ const Home = () => {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_URL;
-
   const fetchBooks = useCallback(() => {
     setLoading(true);
     axios.get(`${apiUrl}/api/books`)
-      .then(res => {
-        setBooks(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-        console.log('Fetch books error:', err.response ? err.response.data : err.message);
-      });
+      .then(res => { setBooks(res.data); setLoading(false); })
+      .catch(err => { setError(err.message); setLoading(false); console.log('Fetch books error:', err.response ? err.response.data : err.message); });
   }, [apiUrl]);
-
+  
   useEffect(() => {
     fetchBooks();
   }, [fetchBooks]);
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '20px', color: '#fff', background: 'linear-gradient(45deg, #4a90e2, #50c878)' }}>Loading books...</div>;
-  if (error) return <div style={{ color: 'red', textAlign: 'center', padding: '20px', background: '#ffebee' }}>Error: {error}</div>;
+  if (loading) return <div style={{ textAlign: 'center', padding: '20px' }}>Loading books...</div>;
+  if (error) return <div style={{ color: 'red', textAlign: 'center', padding: '20px' }}>Error: {error}</div>;
 
   const filteredBooks = books.filter(book =>
     book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
     book.isbn.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const addToFavorites = (bookId) => {
-    if (!token) {
-      alert('Please log in to add books to favorites');
-      return;
-    }
-    axios.post(`${apiUrl}/api/users/favorites/${bookId}`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => toast.success(res.data.message))
-      .catch(err => {
-        console.log('Add to favorites error:', err.response ? err.response.data : err.message);
-        toast.error(err.response?.data?.message || 'Failed to add to favorites');
-      });
-  };
 
   const getUserId = () => {
     if (!token) return null;
@@ -179,6 +156,23 @@ const Home = () => {
       });
   };
 
+  const addToFavorites = (id) => {
+    if (!token) {
+      alert('Please log in to add books to favorites');
+      return;
+    }
+    const headers = { Authorization: `Bearer ${token}` };
+    axios.post(`${apiUrl}/api/favorites`, { bookId: id }, { headers })
+      .then(() => {
+        toast.success('Book added to favorites!');
+      })
+      .catch(err => {
+        setError(err.response?.data?.message || err.message);
+        toast.error(err.response?.data?.message || err.message || 'Failed to add to favorites');
+        console.log('Favorites error:', err.response ? err.response.data : err.message);
+      });
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
@@ -208,132 +202,73 @@ const Home = () => {
   };
 
   return (
-    <div style={{
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '20px',
-      background: 'linear-gradient(135deg, #f5f7fa, #c3cfe2)',
-      borderRadius: '15px',
-      boxShadow: '0 10px 20px rgba(0, 0, 0, 0.1)',
-      fontFamily: '"Poppins", sans-serif',
-    }}>
-      <h1 style={{
-        textAlign: 'center',
-        color: '#2c3e50',
-        fontSize: '2.5rem',
-        marginBottom: '20px',
-        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
-        animation: 'fadeIn 1s ease-in',
-      }}>
-        Book Management System
-      </h1>
+    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
+      <h1 style={{ textAlign: 'center', color: '#333' }}>Admin Dashboard</h1>
       {token ? (
-        <div style={{
-          textAlign: 'center',
-          margin: '20px 0',
-          background: 'rgba(255, 255, 255, 0.9)',
-          padding: '15px',
-          borderRadius: '10px',
-          boxShadow: '0 5px 15px rgba(0, 0, 0, 0.1)',
-        }}>
-          <p style={{
-            marginBottom: '10px',
-            fontSize: '1.2rem',
-            color: '#2c3e50',
-            fontWeight: '600',
-          }}>
-            Welcome, <span style={{ color: '#3498db', fontWeight: '700' }}>{username || 'User'}</span>!
+        <div style={{ textAlign: 'center', margin: '10px 0' }}>
+          <p style={{ marginBottom: '5px', fontSize: '16px', color: '#007BFF' }}>
+            Welcome, <strong>{username || 'User'}</strong>!
           </p>
           <button
             onClick={handleLogout}
             style={{
-              padding: '8px 16px',
-              background: 'linear-gradient(45deg, #e74c3c, #c0392b)',
+              padding: '6px 12px',
+              backgroundColor: '#dc3545',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontSize: '14px',
-              boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
-              transition: 'all 0.3s ease',
+              fontSize: '12px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              transition: 'background-color 0.3s, transform 0.2s',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'linear-gradient(45deg, #c0392b, #e74c3c)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 15px rgba(231, 76, 60, 0.4)';
+              e.currentTarget.style.backgroundColor = '#c82333';
+              e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'linear-gradient(45deg, #e74c3c, #c0392b)';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(231, 76, 60, 0.3)';
+              e.currentTarget.style.backgroundColor = '#dc3545';
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             Logout
           </button>
         </div>
       ) : (
-        <p style={{
-          textAlign: 'center',
-          margin: '20px 0',
-          color: '#7f8c8d',
-          fontSize: '1.1rem',
-        }}>
-          Please <Link to="/login" style={{ color: '#3498db', textDecoration: 'none', fontWeight: '600' }}>log in</Link> or 
-          <Link to="/register" style={{ color: '#3498db', textDecoration: 'none', fontWeight: '600', marginLeft: '5px' }}>register</Link> 
-          to access more features.
+        <p style={{ textAlign: 'center', margin: '10px 0' }}>
+          Please <Link to="/login" style={{ color: '#007BFF', textDecoration: 'underline' }}>log in</Link> to access this dashboard.
         </p>
       )}
 
       {token && (
-        <div style={{
-          margin: '20px 0',
-          padding: '15px',
-          borderRadius: '10px',
-          background: 'rgba(255, 255, 255, 0.9)',
-          boxShadow: '0 5px 15px rgba(0, 0, 0, 0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-        }}>
+        <div style={{ margin: '20px 0', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
           <input
             type="text"
             placeholder="Search by title, author, or ISBN..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              padding: '10px',
-              width: '70%',
-              border: '2px solid #3498db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-              transition: 'border-color 0.3s ease',
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = '#2980b9'}
-            onBlur={e => e.currentTarget.style.borderColor = '#3498db'}
+            style={{ marginRight: '10px', padding: '8px', width: '70%', border: '1px solid #ccc', borderRadius: '4px' }}
           />
           <button
             onClick={() => setSearchTerm('')}
             style={{
-              padding: '8px 16px',
-              background: 'linear-gradient(45deg, #e74c3c, #c0392b)',
+              padding: '6px 12px',
+              backgroundColor: '#dc3545',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontSize: '14px',
-              boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
-              transition: 'all 0.3s ease',
+              fontSize: '12px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              transition: 'background-color 0.3s, transform 0.2s',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'linear-gradient(45deg, #c0392b, #e74c3c)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 15px rgba(231, 76, 60, 0.4)';
+              e.currentTarget.style.backgroundColor = '#c82333';
+              e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'linear-gradient(45deg, #e74c3c, #c0392b)';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(231, 76, 60, 0.3)';
+              e.currentTarget.style.backgroundColor = '#dc3545';
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             Clear Search
@@ -346,25 +281,23 @@ const Home = () => {
           <button
             onClick={downloadBooks}
             style={{
-              padding: '8px 16px',
-              background: 'linear-gradient(45deg, #3498db, #2980b9)',
+              padding: '6px 12px',
+              backgroundColor: '#007BFF',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontSize: '14px',
-              boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
-              transition: 'all 0.3s ease',
+              fontSize: '12px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              transition: 'background-color 0.3s, transform 0.2s',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'linear-gradient(45deg, #2980b9, #3498db)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 15px rgba(52, 152, 219, 0.4)';
+              e.currentTarget.style.backgroundColor = '#0056b3';
+              e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'linear-gradient(45deg, #3498db, #2980b9)';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(52, 152, 219, 0.3)';
+              e.currentTarget.style.backgroundColor = '#007BFF';
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             Download All Books
@@ -373,119 +306,56 @@ const Home = () => {
       )}
 
       {token && (
-        <div style={{
-          margin: '20px 0',
-          padding: '20px',
-          borderRadius: '10px',
-          background: 'rgba(255, 255, 255, 0.9)',
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)',
-          animation: 'slideIn 1s ease-out',
-        }}>
-          <h2 style={{
-            marginBottom: '15px',
-            color: '#2c3e50',
-            fontSize: '1.8rem',
-            textShadow: '1px 1px 3px rgba(0, 0, 0, 0.1)',
-          }}>
-            Add New Book
-          </h2>
+        <div style={{ margin: '20px 0', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
+          <h2 style={{ marginBottom: '10px' }}>Add New Book</h2>
           <input
             type="text"
             placeholder="Title"
             value={newBook.title}
             onChange={e => setNewBook({ ...newBook, title: e.target.value })}
-            style={{
-              margin: '10px 0',
-              padding: '12px',
-              width: '100%',
-              border: '2px solid #3498db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-              transition: 'border-color 0.3s ease',
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = '#2980b9'}
-            onBlur={e => e.currentTarget.style.borderColor = '#3498db'}
+            style={{ margin: '5px 0', padding: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '4px' }}
           />
           <input
             type="text"
             placeholder="Author"
             value={newBook.author}
             onChange={e => setNewBook({ ...newBook, author: e.target.value })}
-            style={{
-              margin: '10px 0',
-              padding: '12px',
-              width: '100%',
-              border: '2px solid #3498db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-              transition: 'border-color 0.3s ease',
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = '#2980b9'}
-            onBlur={e => e.currentTarget.style.borderColor = '#3498db'}
+            style={{ margin: '5px 0', padding: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '4px' }}
           />
           <input
             type="text"
             placeholder="ISBN"
             value={newBook.isbn}
             onChange={e => setNewBook({ ...newBook, isbn: e.target.value })}
-            style={{
-              margin: '10px 0',
-              padding: '12px',
-              width: '100%',
-              border: '2px solid #3498db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-              transition: 'border-color 0.3s ease',
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = '#2980b9'}
-            onBlur={e => e.currentTarget.style.borderColor = '#3498db'}
+            style={{ margin: '5px 0', padding: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '4px' }}
           />
           <textarea
             placeholder="Description"
             value={newBook.description}
             onChange={e => setNewBook({ ...newBook, description: e.target.value })}
-            style={{
-              margin: '10px 0',
-              padding: '12px',
-              width: '100%',
-              border: '2px solid #3498db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-              minHeight: '80px',
-              resize: 'vertical',
-              transition: 'border-color 0.3s ease',
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = '#2980b9'}
-            onBlur={e => e.currentTarget.style.borderColor = '#3498db'}
+            style={{ margin: '5px 0', padding: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '4px', minHeight: '50px' }}
           />
           <button
             onClick={addBook}
             style={{
-              margin: '15px 0',
-              padding: '10px 20px',
-              background: 'linear-gradient(45deg, #3498db, #2980b9)',
+              margin: '10px 0',
+              padding: '6px 12px',
+              backgroundColor: '#007BFF',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontSize: '14px',
-              boxShadow: '0 6px 18px rgba(52, 152, 219, 0.4)',
-              transition: 'all 0.3s ease',
-              animation: 'pulse 1.5s infinite',
+              fontSize: '12px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              transition: 'background-color 0.3s, transform 0.2s',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'linear-gradient(45deg, #2980b9, #3498db)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(52, 152, 219, 0.5)';
+              e.currentTarget.style.backgroundColor = '#0056b3';
+              e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'linear-gradient(45deg, #3498db, #2980b9)';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 6px 18px rgba(52, 152, 219, 0.4)';
+              e.currentTarget.style.backgroundColor = '#007BFF';
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             Add Book
@@ -493,79 +363,20 @@ const Home = () => {
         </div>
       )}
 
-      <h2 style={{
-        marginTop: '30px',
-        color: '#2c3e50',
-        fontSize: '2rem',
-        textAlign: 'center',
-        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
-        animation: 'fadeIn 1s ease-in',
-      }}>
-        Books
-      </h2>
+      <h2 style={{ marginTop: '20px' }}>Books</h2>
       {filteredBooks.length === 0 ? (
-        <p style={{
-          textAlign: 'center',
-          margin: '20px 0',
-          color: '#7f8c8d',
-          fontSize: '1rem',
-          background: 'rgba(255, 255, 255, 0.9)',
-          padding: '15px',
-          borderRadius: '10px',
-          boxShadow: '0 5px 15px rgba(0, 0, 0, 0.1)',
-        }}>
+        <p style={{ textAlign: 'center', margin: '10px 0' }}>
           {searchTerm ? 'No books found matching your search.' : 'No books available. Please add books above.'}
         </p>
       ) : (
-        <table style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          marginTop: '20px',
-          background: 'rgba(255, 255, 255, 0.9)',
-          borderRadius: '10px',
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)',
-          animation: 'slideIn 1s ease-out',
-        }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
           <thead>
-            <tr style={{
-              background: 'linear-gradient(45deg, #3498db, #2980b9)',
-              borderBottom: '2px solid #2980b9',
-            }}>
-              <th style={{
-                padding: '12px',
-                textAlign: 'left',
-                color: 'white',
-                fontWeight: '600',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
-              }}>Title</th>
-              <th style={{
-                padding: '12px',
-                textAlign: 'left',
-                color: 'white',
-                fontWeight: '600',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
-              }}>Author</th>
-              <th style={{
-                padding: '12px',
-                textAlign: 'left',
-                color: 'white',
-                fontWeight: '600',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
-              }}>ISBN</th>
-              <th style={{
-                padding: '12px',
-                textAlign: 'left',
-                color: 'white',
-                fontWeight: '600',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
-              }}>Description</th>
-              <th style={{
-                padding: '12px',
-                textAlign: 'left',
-                color: 'white',
-                fontWeight: '600',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
-              }}>Actions</th>
+            <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+              <th style={{ padding: '10px', textAlign: 'left' }}>Title</th>
+              <th style={{ padding: '10px', textAlign: 'left' }}>Author</th>
+              <th style={{ padding: '10px', textAlign: 'left' }}>ISBN</th>
+              <th style={{ padding: '10px', textAlign: 'left' }}>Description</th>
+              <th style={{ padding: '10px', textAlign: 'left' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -574,41 +385,39 @@ const Home = () => {
                 key={book._id}
                 style={{
                   borderBottom: '1px solid #ddd',
-                  transition: 'background-color 0.3s ease',
+                  transition: 'background-color 0.2s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f9f9f9'}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <td style={{ padding: '12px', color: '#2c3e50' }}>{book.title}</td>
-                <td style={{ padding: '12px', color: '#2c3e50' }}>{book.author}</td>
-                <td style={{ padding: '12px', color: '#2c3e50' }}>{book.isbn}</td>
-                <td style={{ padding: '12px', color: '#2c3e50' }}>{book.description}</td>
-                <td style={{ padding: '12px' }}>
+                <td style={{ padding: '10px' }}>{book.title}</td>
+                <td style={{ padding: '10px' }}>{book.author}</td>
+                <td style={{ padding: '10px' }}>{book.isbn}</td>
+                <td style={{ padding: '10px' }}>{book.description}</td>
+                <td style={{ padding: '10px' }}>
                   {token && (
                     <>
                       <button
                         onClick={() => addToFavorites(book._id)}
                         style={{
                           margin: '5px 5px 5px 0',
-                          padding: '8px 12px',
-                          background: 'linear-gradient(45deg, #27ae60, #2ecc71)',
+                          padding: '6px 10px',
+                          backgroundColor: '#28a745',
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
                           cursor: 'pointer',
-                          fontSize: '14px',
-                          boxShadow: '0 4px 12px rgba(39, 174, 96, 0.3)',
-                          transition: 'all 0.3s ease',
+                          fontSize: '12px',
+                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                          transition: 'background-color 0.3s, transform 0.2s',
                         }}
                         onMouseEnter={e => {
-                          e.currentTarget.style.background = 'linear-gradient(45deg, #2ecc71, #27ae60)';
-                          e.currentTarget.style.transform = 'translateY(-2px)';
-                          e.currentTarget.style.boxShadow = '0 6px 15px rgba(39, 174, 96, 0.4)';
+                          e.currentTarget.style.backgroundColor = '#218838';
+                          e.currentTarget.style.transform = 'scale(1.05)';
                         }}
                         onMouseLeave={e => {
-                          e.currentTarget.style.background = 'linear-gradient(45deg, #27ae60, #2ecc71)';
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(39, 174, 96, 0.3)';
+                          e.currentTarget.style.backgroundColor = '#28a745';
+                          e.currentTarget.style.transform = 'scale(1)';
                         }}
                       >
                         Favorites
@@ -619,25 +428,23 @@ const Home = () => {
                             onClick={() => handleEditOpen(book)}
                             style={{
                               margin: '5px 5px 5px 0',
-                              padding: '8px 12px',
-                              background: 'linear-gradient(45deg, #f1c40f, #f39c12)',
+                              padding: '6px 10px',
+                              backgroundColor: '#ffc107',
                               color: 'white',
                               border: 'none',
                               borderRadius: '8px',
                               cursor: 'pointer',
-                              fontSize: '14px',
-                              boxShadow: '0 4px 12px rgba(241, 196, 15, 0.3)',
-                              transition: 'all 0.3s ease',
+                              fontSize: '12px',
+                              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                              transition: 'background-color 0.3s, transform 0.2s',
                             }}
                             onMouseEnter={e => {
-                              e.currentTarget.style.background = 'linear-gradient(45deg, #f39c12, #f1c40f)';
-                              e.currentTarget.style.transform = 'translateY(-2px)';
-                              e.currentTarget.style.boxShadow = '0 6px 15px rgba(241, 196, 15, 0.4)';
+                              e.currentTarget.style.backgroundColor = '#e0a800';
+                              e.currentTarget.style.transform = 'scale(1.05)';
                             }}
                             onMouseLeave={e => {
-                              e.currentTarget.style.background = 'linear-gradient(45deg, #f1c40f, #f39c12)';
-                              e.currentTarget.style.transform = 'translateY(0)';
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(241, 196, 15, 0.3)';
+                              e.currentTarget.style.backgroundColor = '#ffc107';
+                              e.currentTarget.style.transform = 'scale(1)';
                             }}
                           >
                             Edit
@@ -646,25 +453,23 @@ const Home = () => {
                             onClick={() => deleteBook(book._id)}
                             style={{
                               margin: '5px 5px 5px 0',
-                              padding: '8px 12px',
-                              background: 'linear-gradient(45deg, #e74c3c, #c0392b)',
+                              padding: '6px 10px',
+                              backgroundColor: '#dc3545',
                               color: 'white',
                               border: 'none',
                               borderRadius: '8px',
                               cursor: 'pointer',
-                              fontSize: '14px',
-                              boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
-                              transition: 'all 0.3s ease',
+                              fontSize: '12px',
+                              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                              transition: 'background-color 0.3s, transform 0.2s',
                             }}
                             onMouseEnter={e => {
-                              e.currentTarget.style.background = 'linear-gradient(45deg, #c0392b, #e74c3c)';
-                              e.currentTarget.style.transform = 'translateY(-2px)';
-                              e.currentTarget.style.boxShadow = '0 6px 15px rgba(231, 76, 60, 0.4)';
+                              e.currentTarget.style.backgroundColor = '#c82333';
+                              e.currentTarget.style.transform = 'scale(1.05)';
                             }}
                             onMouseLeave={e => {
-                              e.currentTarget.style.background = 'linear-gradient(45deg, #e74c3c, #c0392b)';
-                              e.currentTarget.style.transform = 'translateY(0)';
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(231, 76, 60, 0.3)';
+                              e.currentTarget.style.backgroundColor = '#dc3545';
+                              e.currentTarget.style.transform = 'scale(1)';
                             }}
                           >
                             Delete
@@ -672,13 +477,7 @@ const Home = () => {
                         </>
                       )}
                       {book.createdBy.toString() !== userId && (
-                        <p style={{
-                          color: '#e74c3c',
-                          margin: '5px 0',
-                          fontSize: '0.9rem',
-                          fontWeight: '500',
-                          textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
-                        }}>
+                        <p style={{ color: '#dc3545', margin: '5px 0', fontSize: '0.9em' }}>
                           You can only edit or delete your own books.
                         </p>
                       )}
@@ -702,139 +501,66 @@ const Home = () => {
             bottom: 'auto',
             marginRight: '-50%',
             transform: 'translate(-50%, -50%)',
-            width: '450px',
+            width: '400px',
             padding: '20px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #ffffff, #f5f7fa)',
-            boxShadow: '0 15px 30px rgba(0, 0, 0, 0.2)',
-            border: 'none',
-            animation: 'modalSlide 0.5s ease-out',
+            borderRadius: '8px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
           },
           overlay: {
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
           },
         }}
       >
-        <h2 style={{
-          marginBottom: '15px',
-          color: '#2c3e50',
-          fontSize: '1.8rem',
-          textAlign: 'center',
-          textShadow: '1px 1px 3px rgba(0, 0, 0, 0.1)',
-        }}>
-          Edit Book
-        </h2>
+        <h2 style={{ marginBottom: '15px', color: '#333' }}>Edit Book</h2>
         <form onSubmit={handleEditSubmit}>
           <input
             type="text"
             placeholder="Title"
             value={editForm.title}
             onChange={e => setEditForm({ ...editForm, title: e.target.value })}
-            style={{
-              margin: '10px 0',
-              padding: '12px',
-              width: '100%',
-              border: '2px solid #3498db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-              transition: 'border-color 0.3s ease',
-              background: '#fff',
-              boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.05)',
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = '#2980b9'}
-            onBlur={e => e.currentTarget.style.borderColor = '#3498db'}
+            style={{ margin: '5px 0', padding: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '4px' }}
           />
           <input
             type="text"
             placeholder="Author"
             value={editForm.author}
             onChange={e => setEditForm({ ...editForm, author: e.target.value })}
-            style={{
-              margin: '10px 0',
-              padding: '12px',
-              width: '100%',
-              border: '2px solid #3498db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-              transition: 'border-color 0.3s ease',
-              background: '#fff',
-              boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.05)',
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = '#2980b9'}
-            onBlur={e => e.currentTarget.style.borderColor = '#3498db'}
+            style={{ margin: '5px 0', padding: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '4px' }}
           />
           <input
             type="text"
             placeholder="ISBN"
             value={editForm.isbn}
             onChange={e => setEditForm({ ...editForm, isbn: e.target.value })}
-            style={{
-              margin: '10px 0',
-              padding: '12px',
-              width: '100%',
-              border: '2px solid #3498db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-              transition: 'border-color 0.3s ease',
-              background: '#fff',
-              boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.05)',
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = '#2980b9'}
-            onBlur={e => e.currentTarget.style.borderColor = '#3498db'}
+            style={{ margin: '5px 0', padding: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '4px' }}
           />
           <textarea
             placeholder="Description"
             value={editForm.description}
             onChange={e => setEditForm({ ...editForm, description: e.target.value })}
-            style={{
-              margin: '10px 0',
-              padding: '12px',
-              width: '100%',
-              border: '2px solid #3498db',
-              borderRadius: '8px',
-              fontSize: '14px',
-              outline: 'none',
-              minHeight: '80px',
-              resize: 'vertical',
-              transition: 'border-color 0.3s ease',
-              background: '#fff',
-              boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.05)',
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = '#2980b9'}
-            onBlur={e => e.currentTarget.style.borderColor = '#3498db'}
+            style={{ margin: '5px 0', padding: '8px', width: '100%', border: '1px solid #ccc', borderRadius: '4px', minHeight: '50px' }}
           />
-          <div style={{
-            marginTop: '20px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: '10px',
-          }}>
+          <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-between' }}>
             <button
               type="submit"
               style={{
-                padding: '10px 20px',
-                background: 'linear-gradient(45deg, #3498db, #2980b9)',
+                padding: '6px 12px',
+                backgroundColor: '#007BFF',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                fontSize: '14px',
-                boxShadow: '0 6px 18px rgba(52, 152, 219, 0.4)',
-                transition: 'all 0.3s ease',
-                flex: '1',
+                fontSize: '12px',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                transition: 'background-color 0.3s, transform 0.2s',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = 'linear-gradient(45deg, #2980b9, #3498db)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(52, 152, 219, 0.5)';
+                e.currentTarget.style.backgroundColor = '#0056b3';
+                e.currentTarget.style.transform = 'scale(1.05)';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.background = 'linear-gradient(45deg, #3498db, #2980b9)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 6px 18px rgba(52, 152, 219, 0.4)';
+                e.currentTarget.style.backgroundColor = '#007BFF';
+                e.currentTarget.style.transform = 'scale(1)';
               }}
             >
               Save Changes
@@ -842,26 +568,23 @@ const Home = () => {
             <button
               onClick={handleEditClose}
               style={{
-                padding: '10px 20px',
-                background: 'linear-gradient(45deg, #e74c3c, #c0392b)',
+                padding: '6px 12px',
+                backgroundColor: '#dc3545',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                fontSize: '14px',
-                boxShadow: '0 6px 18px rgba(231, 76, 60, 0.4)',
-                transition: 'all 0.3s ease',
-                flex: '1',
+                fontSize: '12px',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                transition: 'background-color 0.3s, transform 0.2s',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = 'linear-gradient(45deg, #c0392b, #e74c3c)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(231, 76, 60, 0.5)';
+                e.currentTarget.style.backgroundColor = '#c82333';
+                e.currentTarget.style.transform = 'scale(1.05)';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.background = 'linear-gradient(45deg, #e74c3c, #c0392b)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 6px 18px rgba(231, 76, 60, 0.4)';
+                e.currentTarget.style.backgroundColor = '#dc3545';
+                e.currentTarget.style.transform = 'scale(1)';
               }}
             >
               Cancel
@@ -873,31 +596,4 @@ const Home = () => {
   );
 };
 
-const styleSheet = document.styleSheets[0];
-styleSheet.insertRule(`
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-`, styleSheet.cssRules.length);
-styleSheet.insertRule(`
-  @keyframes slideIn {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-`, styleSheet.cssRules.length);
-styleSheet.insertRule(`
-  @keyframes modalSlide {
-    from { transform: translate(-50%, -60%); opacity: 0; }
-    to { transform: translate(-50%, -50%); opacity: 1; }
-  }
-`, styleSheet.cssRules.length);
-styleSheet.insertRule(`
-  @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-  }
-`, styleSheet.cssRules.length);
-
-export default Home;
+export default AdminDashboard;
