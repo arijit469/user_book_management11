@@ -8,7 +8,7 @@ const Register = () => {
   const [formData, setFormData] = useState({ username: '', password: '', role: 'user' });
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const apiUrl = process.env.REACT_APP_API_URL; // Loads https://user-book-management4.onrender.com
+  const apiUrl = process.env.REACT_APP_API_URL;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,7 +17,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${apiUrl}/api/users/register`, formData); // Updated URL
+      await axios.post(`${apiUrl}/api/users/register`, formData);
       toast.success('Registered successfully! Please login.');
       navigate('/login');
     } catch (err) {
@@ -193,7 +193,6 @@ const Register = () => {
   );
 };
 
-// CSS Animations (inline styles don’t support @keyframes, so move to a CSS file or handle differently)
 const styleSheet = document.styleSheets[0];
 styleSheet.insertRule(`
   @keyframes fadeIn {
