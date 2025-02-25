@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Navbar from './components/Navbar';
 import { ClipLoader } from 'react-spinners';
-import Landing from './components/Landing';
+// import Landing from './components/Landing';
 
 const Home = lazy(() => import('./components/Home'));
 const Login = lazy(() => import('./components/Login'));
